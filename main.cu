@@ -2,6 +2,14 @@
 #include <SDL.h>
 #include <cuda_runtime.h>
 
+
+__device__ Uint32 getColor(int iter) {
+    int r = (iter % 256);
+    int g = ((iter * 2) % 256);
+    int b = ((iter * 3) % 256);
+    return (0xFF << 24) | (r << 16) | (g << 8) | b;
+}
+
 __global__ void mandelbrotSetKernel(unsigned int* output, float lowerX, float lowerY, float stepX, float stepY, int maxIter, int width, int height) {
     int idx = threadIdx.x + blockIdx.x * blockDim.x;
     int idy = threadIdx.y + blockIdx.y * blockDim.y;
@@ -21,14 +29,7 @@ __global__ void mandelbrotSetKernel(unsigned int* output, float lowerX, float lo
         iteration++;
     }
 
-    output[pixelIndex] = iteration;
-}
-
-Uint32 getColor(int iter) {
-    int r = (iter % 256);
-    int g = ((iter * 2) % 256);
-    int b = ((iter * 3) % 256);
-    return (0xFF << 24) | (r << 16) | (g << 8) | b;
+    output[pixelIndex] = getColor(iteration);
 }
 
 
@@ -74,8 +75,8 @@ int main() {
 
         unsigned int* d_output;
         cudaMalloc(&d_output, width * height * sizeof(unsigned int));
-        dim3 blocks(32, 32); // Corrected block dimensions
-        dim3 grid((width + blocks.x - 1) / blocks.x, (height + blocks.y - 1) / blocks.y); // Adjusted for corrected blocks
+        dim3 blocks(16, 16);
+        dim3 grid((width + blocks.x - 1) / blocks.x, (height + blocks.y - 1) / blocks.y);
         mandelbrotSetKernel<<<grid, blocks>>>(d_output, lowerX, lowerY, stepX, stepY, maxIter, width, height);
 
         unsigned int* pixels = new unsigned int[width * height];
@@ -85,9 +86,7 @@ int main() {
 
         #pragma omp parallel for schedule(dynamic)
         for (int i = 0; i < width * height; ++i) {
-            unsigned int iter = pixels[i];
-            Uint32 pixelColor = getColor(iter);
-            ((Uint32*)surface->pixels)[(i / width) * surface->w + (i % width)] = pixelColor;
+            ((Uint32*)surface->pixels)[i] = pixels[i];
         }
 
         SDL_UpdateWindowSurface(window);
