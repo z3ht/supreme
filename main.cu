@@ -52,23 +52,30 @@ int main() {
     SDL_Event event;
 
     while (!quit) {
+        float zoomFactor = 1;
+
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 quit = true;
             } else if (event.type == SDL_MOUSEWHEEL) {
-                float zoomFactor = (event.wheel.y > 0) ? 0.9f : 1.1f;
-                float rangeX = (upperX - lowerX) * zoomFactor;
-                float rangeY = (upperY - lowerY) * zoomFactor;
-                // float centerX = (upperX + lowerX) / 2;
-                // float centerY = (upperY + lowerY) / 2;
+                zoomFactor = (event.wheel.y > 0) ? 0.9f : 1.1f;
 
-                lowerX = centerX - rangeX / 2;
-                upperX = centerX + rangeX / 2;
-                lowerY = centerY - rangeY / 2;
-                upperY = centerY + rangeY / 2;
+            } else if (event.type == SDL_MOUSEBUTTONDOWN) {
+                int mouseX, mouseY;
+                SDL_GetMouseState(&mouseX, &mouseY);
+
+                centerX = lowerX + (mouseX / (float)width) * (upperX - lowerX);
+                centerY = lowerY + (mouseY / (float)height) * (upperY - lowerY);
             }
-
         }
+
+        float rangeX = (upperX - lowerX) * zoomFactor;
+        float rangeY = (upperY - lowerY) * zoomFactor;
+
+        lowerX = centerX - rangeX / 2;
+        upperX = centerX + rangeX / 2;
+        lowerY = centerY - rangeY / 2;
+        upperY = centerY + rangeY / 2;
 
         float stepX = (upperX - lowerX) / width;
         float stepY = (upperY - lowerY) / height;
