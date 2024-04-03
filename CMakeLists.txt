@@ -11,5 +11,10 @@ link_libraries(${SDL2_LIBRARIES})
 find_package(OpenMP REQUIRED)
 link_libraries(OpenMP::OpenMP_CXX)
 
+include_directories("/home/andrew/opt/gmp-6.3.0/build/include")
+link_directories("/home/andrew/opt/gmp-6.3.0/build/lib")
+
+include_directories("/home/andrew/opt/CGBN/include")
+
 add_executable(supreme main.cu)
 

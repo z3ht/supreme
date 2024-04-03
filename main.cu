@@ -1,6 +1,8 @@
 #include <iostream>
 #include <SDL.h>
 #include <cuda_runtime.h>
+#include <gmp.h>
+#include <cgbn/cgbn.h>
 
 
 __device__ Uint32 getColor(int iter) {
