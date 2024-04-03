@@ -34,11 +34,13 @@ __global__ void mandelbrotSetKernel(unsigned int* output, double lowerX, double 
 
 
 int main() {
-    const int width = 2024, height = 1568, maxIter = 500;
+    const int width = 2024, height = 1568, maxIter = 400;
     double lowerX = -2.5, lowerY = -1.0, upperX = 1.0, upperY = 1.0;
 
     double centerX = -1.186592f;
     double centerY = -1.901211e-1f;
+
+    double zoomSpeed = 1; // Initial zoom speed; smaller values zoom in faster.
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         std::cerr << "Could not initialize SDL: " << SDL_GetError() << std::endl;
@@ -63,8 +65,8 @@ int main() {
             if (event.type == SDL_QUIT) {
                 quit = true;
             } else if (event.type == SDL_MOUSEWHEEL) {
-                zoomFactor = (event.wheel.y > 0) ? 0.9f : 1.1f;
-
+                if (event.wheel.y > 0) { zoomSpeed *= zoomSpeed > 1 ? 0.996 : 0.998; }
+                else if (event.wheel.y < 0) { zoomSpeed /= zoomSpeed > 1 ? 0.998 : 0.996; }
             } else if (event.type == SDL_MOUSEBUTTONDOWN) {
                 int mouseX, mouseY;
                 SDL_GetMouseState(&mouseX, &mouseY);
@@ -74,8 +76,8 @@ int main() {
             }
         }
 
-        double rangeX = (upperX - lowerX) * zoomFactor;
-        double rangeY = (upperY - lowerY) * zoomFactor;
+        double rangeX = (upperX - lowerX) * zoomSpeed;
+        double rangeY = (upperY - lowerY) * zoomSpeed;
 
         lowerX = centerX - rangeX / 2;
         upperX = centerX + rangeX / 2;
