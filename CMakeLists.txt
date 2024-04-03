@@ -8,7 +8,7 @@ find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIRS})
 link_libraries(${SDL2_LIBRARIES})
 
-find_package(OpenMP)
+find_package(OpenMP REQUIRED)
 link_libraries(OpenMP::OpenMP_CXX)
 
 add_executable(supreme main.cu)
